@@ -79,7 +79,7 @@ class Images
   /**
    * Generate a Glide image URL from wordpress image ID or URL
    * 
-   * @param $image
+   * @param $image int|string
    * @param array $params
    * @return string
    */
