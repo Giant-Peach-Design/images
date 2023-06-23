@@ -1,0 +1,16 @@
+{
+  "name": "giantpeach/images",
+  "autoload": {
+    "psr-4": {
+      "Giantpeach\\Schnapps\\Images\\": "src/"
+    }
+  },
+  "authors": [
+    {
+      "name": "Giant Peach"
+    }
+  ],
+  "require": {
+    "league/glide": "^2.2"
+  }
+}
