@@ -121,15 +121,15 @@ class Images
     $pos = strpos($url['path'], $this->basePath);
     if ($pos !== false) {
       $path = substr_replace($url['path'], '', $pos, strlen($this->basePath) + 1);
+
+      $server = ServerFactory::create($this->config);
+
+      status_header(200);
+
+      $server->outputImage($path, $_GET);
+
+      die();
     }
-
-    $server = ServerFactory::create($this->config);
-
-    status_header(200);
-
-    $server->outputImage($path, $_GET);
-
-    die();
   }
 
   /**
