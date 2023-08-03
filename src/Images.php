@@ -143,6 +143,36 @@ class Images
     $url = str_replace($this->uploadsDir['baseurl'], '', $url);
     return $url;
   }
+
+
+  public function getImage(int|string $image, array $params = ['w' => 500, 'h' => 500, 'crop' => true])
+  {
+    $arr = [
+      'url' => $this->getGlideImageUrl($image, $params),
+      'width' => $params['w'],
+      'height' => $params['h'],
+      'webp' => $this->getGlideImageUrl($image, array_merge($params, ['fm' => 'webp'])),
+    ];
+
+    return $arr;
+  }
+
+  public function getImages(array $desktop, array $mobile = [], array $tablet = [])
+  {
+    $arr = [
+      'desktop' => $this->getImage($desktop['id'], $desktop['params']),
+    ];
+
+    if (count($mobile) > 0) {
+      $arr['mobile'] = $this->getImage($mobile['id'], $mobile['params']);
+    }
+
+    if (count($tablet) > 0) {
+      $arr['tablet'] = $this->getImage($tablet['id'], $tablet['params']);
+    }
+
+    return $arr;
+  }
 }
 
 Images::getInstance();
