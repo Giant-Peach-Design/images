@@ -1,5 +1,6 @@
 {
   "name": "giantpeach/images",
+  "license": "MIT",
   "autoload": {
     "psr-4": {
       "Giantpeach\\Schnapps\\Images\\": "src/"
