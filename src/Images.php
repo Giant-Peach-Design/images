@@ -175,7 +175,7 @@ class Images
   }
 }
 
-Images::getInstance();
+//Images::getInstance();
 
 function gp_get_image_url($image, $params = [])
 {
