@@ -96,7 +96,7 @@ class Images
     }
 
     if (empty($url)) {
-      return;
+      return '';
     }
 
     /**
