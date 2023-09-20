@@ -95,6 +95,10 @@ class Images
       $url = $image;
     }
 
+    if (empty($url)) {
+      return;
+    }
+
     /**
      * If we're an SVG just return standard URL
      */
