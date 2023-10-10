@@ -153,10 +153,18 @@ class Images
   {
     $arr = [
       'url' => $this->getGlideImageUrl($image, $params),
-      'width' => $params['w'],
-      'height' => $params['h'],
+      //'width' => $params['w'],
+      //'height' => $params['h'],
       'webp' => $this->getGlideImageUrl($image, array_merge($params, ['fm' => 'webp'])),
     ];
+
+    if (isset($params['w'])) {
+      $arr['width'] = $params['w'];
+    }
+
+    if (isset($params['h'])) {
+      $arr['height'] = $params['h'];
+    }
 
     return $arr;
   }
