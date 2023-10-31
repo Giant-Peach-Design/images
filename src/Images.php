@@ -172,15 +172,15 @@ class Images
   public function getImages(array $desktop, array $mobile = [], array $tablet = [])
   {
     $arr = [
-      'desktop' => $this->getImage($desktop['id'], $desktop['params']),
+      'desktop' => $desktop['id'] ? $this->getImage($desktop['id'], $desktop['params']) : null,
     ];
 
     if (count($mobile) > 0) {
-      $arr['mobile'] = $this->getImage($mobile['id'], $mobile['params']);
+      $arr['mobile'] = $mobile['id'] ? $this->getImage($mobile['id'], $mobile['params']) : null;
     }
 
     if (count($tablet) > 0) {
-      $arr['tablet'] = $this->getImage($tablet['id'], $tablet['params']);
+      $arr['tablet'] = $mobile['id'] ? $this->getImage($tablet['id'], $tablet['params']) : null;
     }
 
     return $arr;
