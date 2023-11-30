@@ -12,6 +12,7 @@
     }
   ],
   "require": {
-    "league/glide": "^2.2"
+    "league/glide": "^2.2",
+    "giantpeach/config": "^1"
   }
 }
