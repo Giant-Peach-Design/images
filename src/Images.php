@@ -253,16 +253,28 @@ class Images
   {
     $arr = [];
 
+    $did = $desktopId;
+    $mid = $mobileId;
+    $tid = $tabletId;
+
+    if ($mobileId < 0) {
+      $mid = $desktopId;
+    }
+
+    if ($tabletId < 0) {
+      $tid = $desktopId;
+    }
+
     if ($desktopId > 0) {
-      $arr['desktop'] = $desktopId ? $this->image($desktopId, $desktopParams) : null;
+      $arr['desktop'] = $did ? $this->image($did, $desktopParams) : null;
     }
 
-    if ($mobileId > 0) {
-      $arr['mobile'] = $mobileId ? $this->image($mobileId, $mobileParams) : null;
+    if ($mid) {
+      $arr['mobile'] = $mid ? $this->image($mid, $mobileParams) : null;
     }
 
-    if ($tabletId > 0) {
-      $arr['tablet'] = $tabletId ? $this->image($tabletId, $tabletParams) : null;
+    if ($tid) {
+      $arr['tablet'] = $tid ? $this->image($tid, $tabletParams) : null;
     }
 
     return $arr;
