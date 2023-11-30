@@ -301,7 +301,7 @@ class Images
     $imgSize = $imageSizes[$imageSize];
 
     // we need to check if the imgSize array has a 'w' and 'h' key...
-    if (isset($imgSize['w']) || isset($imgSize['h'])) {
+    if (!isset($imgSize['desktop'])) {
       return $this->images(
         desktopId: $image,
         desktopParams: $imgSize,
