@@ -292,13 +292,8 @@ class Images
    */
   public function get(int|string $image, string|array $imageSize, int|string $mobileImage = -1, int|string $tabletImage = -1)
   {
-    $imageSizes = Config::get('image-sizes');
 
-    if (!isset($imageSizes[$imageSize])) {
-      throw new \Exception("Image size $imageSize not found. Have you added it to the config?");
-    }
-
-    $imgSize = $imageSizes[$imageSize];
+    $imgSize = $this->getSizeFromConfig($imageSize);
 
     // we need to check if the imgSize array has a 'w' and 'h' key...
     if (!isset($imgSize['desktop'])) {
@@ -319,6 +314,78 @@ class Images
         tabletParams: $imgSize['tablet'] ?? []
       );
     }
+  }
+
+  /**
+   * Get the image URL for a specific size.
+   *
+   * @param int|string|array $image The image ID or array containing the image ID.
+   * @param string $size The desired size of the image.
+   * @return string|null The URL of the image for the specified size, or null if the size is not found.
+   */
+  public function getImageUrlForSize(int|string|array $image, string $size): string|null
+  {
+    if (is_array($image)) {
+      $image = $image['id'];
+    }
+
+    $imgSize = $this->getSizeFromConfig($size);
+
+    if (!isset($imgSize['desktop'])) {
+      return $this->getGlideImageUrl($image, $imgSize);
+    }
+
+    if (isset($imgSize['desktop'])) {
+      return $this->getGlideImageUrl($image, $imgSize['desktop']);
+    }
+
+    return null;
+  }
+
+  /**
+   * Get the size configuration for an image.
+   *
+   * @param string $size The size of the image.
+   * @return array The size configuration for the image.
+   */
+  protected function getSizeFromConfig(string $size): array
+  {
+    $imageSizes = Config::get('image-sizes');
+    $isNested = false;
+    $topLevelKey = $size;
+
+    if (!isset($imageSizes)) {
+      trigger_error("Image Size config not found. Have you created it?", E_USER_WARNING);
+      return [];
+    }
+
+    // check if size contains a dot, if so, assume it's a nested key
+    // e.g. 'hero.desktop' or 'hero.mobile'
+    if (strpos($size, '.') !== false) {
+      $isNested = true;
+      $keys = explode('.', $size);
+      $topLevelKey = $keys[0];
+    }
+
+    if (!$isNested && !isset($imageSizes[$topLevelKey])) {
+      trigger_error("Image size $topLevelKey not found. Have you added it to the config?", E_USER_WARNING);
+      return [];
+    }
+
+    $imgSize = $imageSizes[$topLevelKey];
+
+    if ($isNested) {
+      $keys = explode('.', $size);
+
+      $imgSize = $imageSizes[$keys[0]][$keys[1]];
+    }
+
+    if (!isset($imgSize['desktop'])) {
+      // if array doesn't contain a desktop key, assume it's a single size
+      return $imgSize;
+    }
+
+    return $imgSize;
   }
 }
 
