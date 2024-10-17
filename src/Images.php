@@ -109,7 +109,7 @@ class Images
 
     $path = $this->getRelativeFilePathFromUrl($url);
 
-    return home_url() . '/' . $this->basePath . $path . '?' . http_build_query($params);
+    return get_option( 'home' ) . '/' . $this->basePath . $path . '?' . http_build_query($params);
   }
 
   /**
