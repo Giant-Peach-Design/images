@@ -85,6 +85,116 @@ class ImageTag
     }
     
     /**
+     * Creates a picture tag for art direction with different images per viewport
+     * 
+     * @param int $mobileImageId WordPress attachment ID for mobile
+     * @param int $desktopImageId WordPress attachment ID for desktop
+     * @param string $breakpoint Media query breakpoint (e.g., '640px')
+     * @param array $mobileWidths Array of widths for mobile srcset
+     * @param array $desktopWidths Array of widths for desktop srcset
+     * @param array $attributes HTML attributes for the img tag
+     * @return string The HTML picture element
+     */
+    public function createPicture(
+        int $mobileImageId, 
+        int $desktopImageId, 
+        string $breakpoint = '640px',
+        array $mobileWidths = [375, 750],
+        array $desktopWidths = [1100, 1500, 2200],
+        array $attributes = []
+    ): string {
+        
+        // Get alt text (prefer desktop, fallback to mobile)
+        $alt = get_post_meta($desktopImageId, '_wp_attachment_image_alt', true) ?: 
+               get_post_meta($mobileImageId, '_wp_attachment_image_alt', true) ?: '';
+        
+        // Build mobile srcset
+        $mobileSrcset = $this->buildSrcsetForImage($mobileImageId, $mobileWidths);
+        
+        // Build desktop srcset  
+        $desktopSrcset = $this->buildSrcsetForImage($desktopImageId, $desktopWidths);
+        
+        // Get default src (middle width of desktop)
+        $defaultWidth = $desktopWidths[floor(count($desktopWidths) / 2)] ?? 1100;
+        $defaultSrc = $this->images->getGlideImageUrl($desktopImageId, ['w' => $defaultWidth]);
+        
+        // Build picture element
+        $html = '<picture>';
+        
+        // Mobile source
+        if (!empty($mobileSrcset)) {
+            $html .= '<source media="(max-width: ' . $breakpoint . ')" srcset="' . esc_attr(implode(', ', $mobileSrcset)) . '">';
+        }
+        
+        // Desktop img (fallback)
+        $imgAttributes = array_merge([
+            'src' => $defaultSrc,
+            'alt' => $alt,
+            'loading' => 'lazy',
+            'decoding' => 'async',
+        ], $attributes);
+        
+        // Add desktop srcset if available
+        if (!empty($desktopSrcset)) {
+            $imgAttributes['srcset'] = implode(', ', $desktopSrcset);
+        }
+        
+        // Add dimensions from desktop image
+        $metadata = wp_get_attachment_metadata($desktopImageId);
+        if (isset($metadata['width']) && isset($metadata['height'])) {
+            if (!isset($imgAttributes['width'])) {
+                $imgAttributes['width'] = $metadata['width'];
+            }
+            if (!isset($imgAttributes['height'])) {
+                $imgAttributes['height'] = $metadata['height'];
+            }
+        }
+        
+        $html .= $this->buildImgTag($imgAttributes);
+        $html .= '</picture>';
+        
+        return $html;
+    }
+    
+    /**
+     * Build srcset array for a specific image and widths
+     * 
+     * @param int $imageId
+     * @param array $widths
+     * @return array
+     */
+    protected function buildSrcsetForImage(int $imageId, array $widths): array
+    {
+        $originalUrl = wp_get_attachment_url($imageId);
+        if (!$originalUrl) {
+            return [];
+        }
+        
+        // If SVG, return simple entry
+        if (pathinfo($originalUrl, PATHINFO_EXTENSION) === 'svg') {
+            return [$originalUrl];
+        }
+        
+        $srcsetEntries = [];
+        $metadata = wp_get_attachment_metadata($imageId);
+        $maxWidth = $metadata['width'] ?? 3000;
+        
+        foreach ($widths as $width) {
+            if ($width > $maxWidth) {
+                continue;
+            }
+            
+            $url = $this->images->getGlideImageUrl($imageId, ['w' => $width]);
+            $srcsetEntries[] = $url . ' ' . $width . 'w';
+            
+            $webpUrl = $this->images->getGlideImageUrl($imageId, ['w' => $width, 'fm' => 'webp']);
+            $srcsetEntries[] = $webpUrl . ' ' . $width . 'w';
+        }
+        
+        return $srcsetEntries;
+    }
+
+    /**
      * Helper method to build an img tag from attributes
      * 
      * @param array $attributes

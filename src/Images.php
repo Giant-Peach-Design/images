@@ -402,6 +402,29 @@ class Images
         $imageTag = new ImageTag();
         return $imageTag->create($imageId, $sizes, $widths, $attributes);
     }
+
+    /**
+     * Creates a picture tag for art direction with different images per viewport
+     * 
+     * @param int $mobileImageId WordPress attachment ID for mobile
+     * @param int $desktopImageId WordPress attachment ID for desktop
+     * @param string $breakpoint Media query breakpoint (e.g., '640px')
+     * @param array $mobileWidths Array of widths for mobile srcset
+     * @param array $desktopWidths Array of widths for desktop srcset
+     * @param array $attributes HTML attributes for the img tag
+     * @return string The HTML picture element
+     */
+    public function createPictureTag(
+        int $mobileImageId, 
+        int $desktopImageId, 
+        string $breakpoint = '640px',
+        array $mobileWidths = [375, 750],
+        array $desktopWidths = [1100, 1500, 2200],
+        array $attributes = []
+    ): string {
+        $imageTag = new ImageTag();
+        return $imageTag->createPicture($mobileImageId, $desktopImageId, $breakpoint, $mobileWidths, $desktopWidths, $attributes);
+    }
 }
 
 //Images::getInstance();
@@ -423,4 +446,20 @@ function gp_get_image_url($image, $params = [])
 function gp_image_tag($imageId, $sizes = '100vw', $widths = [375, 750, 1100, 1500, 2200], $attributes = [])
 {
     return Images::getInstance()->createImageTag($imageId, $sizes, $widths, $attributes);
+}
+
+/**
+ * Create a picture tag for art direction with different images per viewport
+ * 
+ * @param int $mobileImageId WordPress attachment ID for mobile
+ * @param int $desktopImageId WordPress attachment ID for desktop
+ * @param string $breakpoint Media query breakpoint (e.g., '640px')
+ * @param array $mobileWidths Array of widths for mobile srcset
+ * @param array $desktopWidths Array of widths for desktop srcset
+ * @param array $attributes HTML attributes for the img tag
+ * @return string HTML picture element
+ */
+function gp_picture_tag($mobileImageId, $desktopImageId, $breakpoint = '640px', $mobileWidths = [375, 750], $desktopWidths = [1100, 1500, 2200], $attributes = [])
+{
+    return Images::getInstance()->createPictureTag($mobileImageId, $desktopImageId, $breakpoint, $mobileWidths, $desktopWidths, $attributes);
 }
