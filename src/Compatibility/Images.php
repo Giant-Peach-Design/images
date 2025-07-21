@@ -2,13 +2,14 @@
 
 namespace Giantpeach\Schnapps\Images\Compatibility;
 
+use Giantpeach\Schnapps\Config\Facades\Config;
 use Giantpeach\Schnapps\Images\Images as ModernImages;
 
 /**
  * Compatibility wrapper for Images class
- * 
+ *
  * Provides backwards compatibility for methods and patterns that were removed in v3.0
- * 
+ *
  * @deprecated version 3.0.0 Use Giantpeach\Schnapps\Images\Images instead
  */
 class Images
@@ -26,7 +27,7 @@ class Images
 
     /**
      * Get the singleton instance
-     * 
+     *
      * @deprecated version 3.0.0 Use ModernImages::getInstance() instead
      */
     public static function getInstance(): self
@@ -40,16 +41,16 @@ class Images
 
     /**
      * Configure the Images instance
-     * 
+     *
      * @deprecated version 3.0.0 Use ModernImages::config() instead
      */
     public function config(array $config): void
     {
         $this->config = array_merge($this->config, $config);
-        
+
         // Pass through to modern Images
         $this->modernImages->config($config);
-        
+
         // Handle image sizes config
         if (isset($config['image-sizes'])) {
             $this->imageSizes = array_merge($this->imageSizes, $config['image-sizes']);
@@ -58,7 +59,7 @@ class Images
 
     /**
      * Get Glide image URL (legacy method name)
-     * 
+     *
      * @deprecated version 3.0.0 Use getUrl() instead
      */
     public function getGlideImageUrl($image, array $params = []): string
@@ -68,7 +69,7 @@ class Images
 
     /**
      * Get image using config-based sizes and multi-viewport handling
-     * 
+     *
      * @deprecated version 3.0.0 Use getUrl() with explicit parameters instead
      */
     public function get($image, $imageSize, $mobileImage = -1, $tabletImage = -1): array
@@ -80,19 +81,19 @@ class Images
         ];
 
         $sizeConfig = $this->getSizeFromConfig($imageSize);
-        
+
         if ($sizeConfig) {
             // Desktop image
             if (isset($sizeConfig['desktop'])) {
                 $result['desktop'] = $this->modernImages->getUrl($image, $sizeConfig['desktop']);
             }
-            
+
             // Mobile image
             $mobileImageId = ($mobileImage !== -1) ? $mobileImage : $image;
             if (isset($sizeConfig['mobile'])) {
                 $result['mobile'] = $this->modernImages->getUrl($mobileImageId, $sizeConfig['mobile']);
             }
-            
+
             // Tablet image
             $tabletImageId = ($tabletImage !== -1) ? $tabletImage : $image;
             if (isset($sizeConfig['tablet'])) {
@@ -105,7 +106,7 @@ class Images
 
     /**
      * Get single image with default parameters
-     * 
+     *
      * @deprecated version 3.0.0 Use getUrl() instead
      */
     public function getImage($image, array $params = ['w' => 500, 'h' => 500, 'fit' => 'crop']): string
@@ -115,7 +116,7 @@ class Images
 
     /**
      * Get multi-viewport images array
-     * 
+     *
      * @deprecated version 3.0.0 Use getUrl() for each viewport instead
      */
     public function getImages($desktop, array $mobile = [], array $tablet = []): array
@@ -145,13 +146,13 @@ class Images
 
     /**
      * Get image URL for config-based size
-     * 
+     *
      * @deprecated version 3.0.0 Use getUrl() with explicit parameters instead
      */
     public function getImageUrlForSize($image, string $size): string
     {
         $sizeConfig = $this->getSizeFromConfig($size);
-        
+
         if ($sizeConfig && isset($sizeConfig['desktop'])) {
             return $this->modernImages->getUrl($image, $sizeConfig['desktop']);
         }
@@ -161,7 +162,7 @@ class Images
 
     /**
      * Get the size configuration for an image.
-     * 
+     *
      * @deprecated version 3.0.0
      * @param string $size The size of the image.
      * @return array The size configuration for the image.
@@ -171,19 +172,19 @@ class Images
         // First try to load from Config package if available
         if (class_exists('Giantpeach\Schnapps\Config\Config')) {
             $imageSizes = \Giantpeach\Schnapps\Config\Config::get('image-sizes');
-            
+
             if (isset($imageSizes)) {
                 return $this->processSizeFromConfig($imageSizes, $size);
             }
         }
-        
+
         // Fallback to local config
         return $this->processSizeFromConfig($this->imageSizes, $size);
     }
-    
+
     /**
      * Process size configuration with nested key support
-     * 
+     *
      * @param array $imageSizes The image sizes configuration
      * @param string $size The size key (supports nested like 'hero.desktop')
      * @return array The size configuration
@@ -263,7 +264,7 @@ class Images
         if (method_exists($this->modernImages, $method)) {
             return call_user_func_array([$this->modernImages, $method], $arguments);
         }
-        
+
         throw new \BadMethodCallException("Method {$method} does not exist");
     }
 }

@@ -61,7 +61,42 @@ The compatibility layer includes these default image sizes:
 
 ## Configuration
 
-You can still configure custom image sizes:
+### Config Package Integration
+
+The compatibility layer integrates with the `giantpeach/config` package if available. Create an `image-sizes.php` config file:
+
+```php
+// config/image-sizes.php
+return [
+    'hero' => [
+        'desktop' => ['w' => 1920, 'h' => 1080, 'fit' => 'crop'],
+        'mobile' => ['w' => 768, 'h' => 432, 'fit' => 'crop'],
+        'tablet' => ['w' => 1024, 'h' => 576, 'fit' => 'crop']
+    ],
+    'card' => [
+        'desktop' => ['w' => 400, 'h' => 300, 'fit' => 'crop'],
+        'mobile' => ['w' => 300, 'h' => 225, 'fit' => 'crop'],
+        'tablet' => ['w' => 350, 'h' => 262, 'fit' => 'crop']
+    ]
+];
+```
+
+### Nested Size Keys
+
+You can use dotted notation for specific viewport sizes:
+
+```php
+// Get specific viewport size from config
+$url = Images::getImageUrlForSize($imageId, 'hero.desktop'); // Uses hero.desktop config
+$url = Images::getImageUrlForSize($imageId, 'hero.mobile');  // Uses hero.mobile config
+
+// Or get all viewports
+$imageSet = Images::get($imageId, 'hero'); // Returns desktop, mobile, tablet URLs
+```
+
+### Manual Configuration
+
+You can also configure custom image sizes programmatically:
 
 ```php
 $images = CompatibilityImages::getInstance();
