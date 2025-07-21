@@ -171,7 +171,7 @@ class Images
     {
         // First try to load from Config package if available
         if (class_exists('Giantpeach\Schnapps\Config\Config')) {
-            $imageSizes = \Giantpeach\Schnapps\Config\Config::get('image-sizes');
+            $imageSizes = Config::get('image-sizes');
 
             if (isset($imageSizes)) {
                 return $this->processSizeFromConfig($imageSizes, $size);
