@@ -4,7 +4,10 @@
   "autoload": {
     "psr-4": {
       "Giantpeach\\Schnapps\\Images\\": "src/"
-    }
+    },
+    "files": [
+      "src/helpers.php"
+    ]
   },
   "authors": [
     {
@@ -12,7 +15,6 @@
     }
   ],
   "require": {
-    "league/glide": "^2.2",
-    "giantpeach/config": "^1"
+    "league/glide": "^2.2"
   }
 }

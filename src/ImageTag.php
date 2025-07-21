@@ -49,17 +49,17 @@ class ImageTag
             }
             
             // Generate URL for this width
-            $url = $this->images->getGlideImageUrl($imageId, ['w' => $width]);
+            $url = $this->images->getUrl($imageId, ['w' => $width]);
             $srcsetEntries[] = $url . ' ' . $width . 'w';
             
             // Also generate WebP version
-            $webpUrl = $this->images->getGlideImageUrl($imageId, ['w' => $width, 'fm' => 'webp']);
+            $webpUrl = $this->images->getUrl($imageId, ['w' => $width, 'fm' => 'webp']);
             $srcsetEntries[] = $webpUrl . ' ' . $width . 'w';
         }
         
         // Use the middle width as the default src
         $defaultWidth = $widths[floor(count($widths) / 2)] ?? 1100;
-        $defaultSrc = $this->images->getGlideImageUrl($imageId, ['w' => $defaultWidth]);
+        $defaultSrc = $this->images->getUrl($imageId, ['w' => $defaultWidth]);
         
         // Build attributes
         $imgAttributes = array_merge([
@@ -116,7 +116,7 @@ class ImageTag
         
         // Get default src (middle width of desktop)
         $defaultWidth = $desktopWidths[floor(count($desktopWidths) / 2)] ?? 1100;
-        $defaultSrc = $this->images->getGlideImageUrl($desktopImageId, ['w' => $defaultWidth]);
+        $defaultSrc = $this->images->getUrl($desktopImageId, ['w' => $defaultWidth]);
         
         // Build picture element
         $html = '<picture>';
@@ -184,10 +184,10 @@ class ImageTag
                 continue;
             }
             
-            $url = $this->images->getGlideImageUrl($imageId, ['w' => $width]);
+            $url = $this->images->getUrl($imageId, ['w' => $width]);
             $srcsetEntries[] = $url . ' ' . $width . 'w';
             
-            $webpUrl = $this->images->getGlideImageUrl($imageId, ['w' => $width, 'fm' => 'webp']);
+            $webpUrl = $this->images->getUrl($imageId, ['w' => $width, 'fm' => 'webp']);
             $srcsetEntries[] = $webpUrl . ' ' . $width . 'w';
         }
         
