@@ -42,12 +42,13 @@ function gp_image_tag(int $imageId, string $sizes = '100vw', array $widths = [37
  * @param array $attributes HTML attributes for the img tag
  * @param array $mobileGlideParams Additional Glide parameters for mobile
  * @param array $desktopGlideParams Additional Glide parameters for desktop
+ * @param array $pictureAttributes HTML attributes for the picture tag
  * @return string HTML picture element
  */
-function gp_picture_tag(?int $mobileImageId, ?int $desktopImageId, string $breakpoint = '640px', array $mobileWidths = [375, 750], array $desktopWidths = [1100, 1500, 2200], array $attributes = [], array $mobileGlideParams = [], array $desktopGlideParams = []): string
+function gp_picture_tag(?int $mobileImageId, ?int $desktopImageId, string $breakpoint = '640px', array $mobileWidths = [375, 750], array $desktopWidths = [1100, 1500, 2200], array $attributes = [], array $mobileGlideParams = [], array $desktopGlideParams = [], array $pictureAttributes = []): string
 {
     $imageTag = new \Giantpeach\Schnapps\Images\ImageTag();
-    return $imageTag->createPicture($mobileImageId, $desktopImageId, $breakpoint, $mobileWidths, $desktopWidths, $attributes, $mobileGlideParams, $desktopGlideParams);
+    return $imageTag->createPicture($mobileImageId, $desktopImageId, $breakpoint, $mobileWidths, $desktopWidths, $attributes, $mobileGlideParams, $desktopGlideParams, $pictureAttributes);
 }
 
 /**

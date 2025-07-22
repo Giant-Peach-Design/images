@@ -101,6 +101,7 @@ class ImageTag
      * @param array $attributes HTML attributes for the img tag
      * @param array $mobileGlideParams Additional Glide parameters for mobile
      * @param array $desktopGlideParams Additional Glide parameters for desktop
+     * @param array $pictureAttributes HTML attributes for the picture tag
      * @return string The HTML picture element
      */
     public function createPicture(
@@ -111,7 +112,8 @@ class ImageTag
         array $desktopWidths = [1100, 1500, 2200],
         array $attributes = [],
         array $mobileGlideParams = [],
-        array $desktopGlideParams = []
+        array $desktopGlideParams = [],
+        array $pictureAttributes = []
     ): string {
         
         // Return empty if both images are null
@@ -143,16 +145,20 @@ class ImageTag
         $defaultParams = array_merge($desktopGlideParams, ['w' => $defaultWidth]);
         $defaultSrc = $this->images->getUrl($desktopImageId, $defaultParams);
         
-        // Build picture element
-        $html = '<picture>';
+        // Build picture element with attributes
+        $html = $this->buildPictureTag($pictureAttributes);
         
         // Mobile source
         if (!empty($mobileSrcset)) {
             $html .= '<source media="(max-width: ' . $breakpoint . ')" srcset="' . esc_attr(implode(', ', $mobileSrcset)) . '">';
         }
         
-        // Desktop img (fallback)
-        $imgAttributes = array_merge([
+        // Desktop img (fallback) with default classes
+        $defaultAttributes = [
+            'class' => 'w-full h-full object-cover'
+        ];
+        
+        $imgAttributes = array_merge($defaultAttributes, [
             'src' => $defaultSrc,
             'alt' => $alt,
             'loading' => 'lazy',
@@ -238,6 +244,25 @@ class ImageTag
     protected function buildImgTag(array $attributes): string
     {
         $html = '<img';
+        foreach ($attributes as $attr => $value) {
+            if ($value !== null && $value !== '') {
+                $html .= ' ' . esc_attr($attr) . '="' . esc_attr($value) . '"';
+            }
+        }
+        $html .= '>';
+        
+        return $html;
+    }
+    
+    /**
+     * Helper method to build a picture tag from attributes
+     * 
+     * @param array $attributes
+     * @return string
+     */
+    protected function buildPictureTag(array $attributes): string
+    {
+        $html = '<picture';
         foreach ($attributes as $attr => $value) {
             if ($value !== null && $value !== '') {
                 $html .= ' ' . esc_attr($attr) . '="' . esc_attr($value) . '"';

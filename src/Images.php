@@ -110,10 +110,11 @@ class Images
         array $desktopWidths = [1100, 1500, 2200],
         array $attributes = [],
         array $mobileGlideParams = [],
-        array $desktopGlideParams = []
+        array $desktopGlideParams = [],
+        array $pictureAttributes = []
     ): string {
         $imageTag = new ImageTag();
-        return $imageTag->createPicture($mobileImageId, $desktopImageId, $breakpoint, $mobileWidths, $desktopWidths, $attributes, $mobileGlideParams, $desktopGlideParams);
+        return $imageTag->createPicture($mobileImageId, $desktopImageId, $breakpoint, $mobileWidths, $desktopWidths, $attributes, $mobileGlideParams, $desktopGlideParams, $pictureAttributes);
     }
 
     /**
