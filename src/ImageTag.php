@@ -134,14 +134,18 @@ class ImageTag
         $alt = get_post_meta($desktopImageId, '_wp_attachment_image_alt', true) ?: 
                get_post_meta($mobileImageId, '_wp_attachment_image_alt', true) ?: '';
         
+        // Auto-derive widths from Glide parameters if not provided
+        $finalMobileWidths = $this->deriveWidthsFromParams($mobileWidths, $mobileGlideParams);
+        $finalDesktopWidths = $this->deriveWidthsFromParams($desktopWidths, $desktopGlideParams);
+        
         // Build mobile srcset
-        $mobileSrcset = $this->buildSrcsetForImage($mobileImageId, $mobileWidths, $mobileGlideParams);
+        $mobileSrcset = $this->buildSrcsetForImage($mobileImageId, $finalMobileWidths, $mobileGlideParams);
         
         // Build desktop srcset  
-        $desktopSrcset = $this->buildSrcsetForImage($desktopImageId, $desktopWidths, $desktopGlideParams);
+        $desktopSrcset = $this->buildSrcsetForImage($desktopImageId, $finalDesktopWidths, $desktopGlideParams);
         
         // Get default src (middle width of desktop)
-        $defaultWidth = $desktopWidths[floor(count($desktopWidths) / 2)] ?? 1100;
+        $defaultWidth = $finalDesktopWidths[floor(count($finalDesktopWidths) / 2)] ?? 1100;
         $defaultParams = array_merge($desktopGlideParams, ['w' => $defaultWidth]);
         $defaultSrc = $this->images->getUrl($desktopImageId, $defaultParams);
         
@@ -271,5 +275,36 @@ class ImageTag
         $html .= '>';
         
         return $html;
+    }
+    
+    /**
+     * Derive widths array from Glide parameters if not explicitly provided
+     * 
+     * @param array $widths Explicitly provided widths
+     * @param array $glideParams Glide parameters that may contain width
+     * @return array Final widths to use
+     */
+    protected function deriveWidthsFromParams(array $widths, array $glideParams): array
+    {
+        // If widths are explicitly provided, use them
+        if (!empty($widths)) {
+            return $widths;
+        }
+        
+        // If Glide params contain a width, use that as the base
+        if (isset($glideParams['w'])) {
+            $baseWidth = $glideParams['w'];
+            
+            // Generate responsive sizes based on the base width
+            return [
+                (int)($baseWidth * 0.5),  // 50% for very small screens
+                $baseWidth,               // Base width
+                (int)($baseWidth * 1.5),  // 150% for high-DPR
+                (int)($baseWidth * 2)     // 200% for very high-DPR
+            ];
+        }
+        
+        // Default fallback widths
+        return [375, 750, 1100, 1500, 2200];
     }
 }
