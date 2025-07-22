@@ -124,22 +124,46 @@ class Images
 
         // Desktop image
         if ($desktopId !== -1 && !empty($desktopParams)) {
-            $result['desktop'] = $this->modernImages->getUrl($desktopId, $desktopParams);
+            $result['desktop'] = $this->image($desktopId, $desktopParams);
         }
 
         // Mobile image (fallback to desktop if not provided)
         $finalMobileId = ($mobileId !== -1) ? $mobileId : $desktopId;
         if ($finalMobileId !== -1 && !empty($mobileParams)) {
-            $result['mobile'] = $this->modernImages->getUrl($finalMobileId, $mobileParams);
+            $result['mobile'] = $this->image($finalMobileId, $mobileParams);
         }
 
         // Tablet image (fallback to desktop if not provided)  
         $finalTabletId = ($tabletId !== -1) ? $tabletId : $desktopId;
         if ($finalTabletId !== -1 && !empty($tabletParams)) {
-            $result['tablet'] = $this->modernImages->getUrl($finalTabletId, $tabletParams);
+            $result['tablet'] = $this->image($finalTabletId, $tabletParams);
         }
 
         return $result;
+    }
+
+    /**
+     * Generate single image data with url, webp, width, height, and alt (private method from original)
+     * 
+     * @deprecated version 3.0.0
+     */
+    private function image(int|string $image, array $params = ['w' => 500, 'h' => 500, 'crop' => true]): array
+    {
+        $arr = [
+            'url' => $this->getGlideImageUrl($image, $params),
+            'webp' => $this->getGlideImageUrl($image, array_merge($params, ['fm' => 'webp'])),
+            'alt' => get_post_meta($image, '_wp_attachment_image_alt', true)
+        ];
+
+        if (isset($params['w'])) {
+            $arr['width'] = $params['w'];
+        }
+
+        if (isset($params['h'])) {
+            $arr['height'] = $params['h'];
+        }
+
+        return $arr;
     }
 
     /**
