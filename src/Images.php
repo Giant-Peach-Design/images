@@ -93,25 +93,27 @@ class Images
     /**
      * Create responsive image tag with srcset
      */
-    public function createImageTag(int $imageId, string $sizes = '100vw', array $widths = [375, 750, 1100, 1500, 2200], array $attributes = []): string
+    public function createImageTag(int $imageId, string $sizes = '100vw', array $widths = [375, 750, 1100, 1500, 2200], array $attributes = [], array $glideParams = []): string
     {
         $imageTag = new ImageTag();
-        return $imageTag->create($imageId, $sizes, $widths, $attributes);
+        return $imageTag->create($imageId, $sizes, $widths, $attributes, $glideParams);
     }
 
     /**
      * Create picture tag for art direction
      */
     public function createPictureTag(
-        int $mobileImageId, 
-        int $desktopImageId, 
+        ?int $mobileImageId, 
+        ?int $desktopImageId, 
         string $breakpoint = '640px',
         array $mobileWidths = [375, 750],
         array $desktopWidths = [1100, 1500, 2200],
-        array $attributes = []
+        array $attributes = [],
+        array $mobileGlideParams = [],
+        array $desktopGlideParams = []
     ): string {
         $imageTag = new ImageTag();
-        return $imageTag->createPicture($mobileImageId, $desktopImageId, $breakpoint, $mobileWidths, $desktopWidths, $attributes);
+        return $imageTag->createPicture($mobileImageId, $desktopImageId, $breakpoint, $mobileWidths, $desktopWidths, $attributes, $mobileGlideParams, $desktopGlideParams);
     }
 
     /**

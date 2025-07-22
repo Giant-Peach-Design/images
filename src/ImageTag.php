@@ -18,9 +18,10 @@ class ImageTag
      * @param string $sizes The sizes attribute for responsive images (e.g., "(min-width: 768px) 50vw, 100vw")
      * @param array $widths Array of widths to generate in the srcset (e.g., [375, 750, 1100, 1500, 2200])
      * @param array $attributes Additional HTML attributes for the img tag
+     * @param array $glideParams Additional Glide parameters (w, h, fit, etc.)
      * @return string The HTML img tag
      */
-    public function create(int $imageId, string $sizes = '100vw', array $widths = [375, 750, 1100, 1500, 2200], array $attributes = []): string
+    public function create(int $imageId, string $sizes = '100vw', array $widths = [375, 750, 1100, 1500, 2200], array $attributes = [], array $glideParams = []): string
     {
         // Get the original image URL and metadata
         $originalUrl = wp_get_attachment_url($imageId);
@@ -48,18 +49,23 @@ class ImageTag
                 continue;
             }
             
+            // Merge width with custom Glide parameters
+            $params = array_merge($glideParams, ['w' => $width]);
+            
             // Generate URL for this width
-            $url = $this->images->getUrl($imageId, ['w' => $width]);
+            $url = $this->images->getUrl($imageId, $params);
             $srcsetEntries[] = $url . ' ' . $width . 'w';
             
             // Also generate WebP version
-            $webpUrl = $this->images->getUrl($imageId, ['w' => $width, 'fm' => 'webp']);
+            $webpParams = array_merge($params, ['fm' => 'webp']);
+            $webpUrl = $this->images->getUrl($imageId, $webpParams);
             $srcsetEntries[] = $webpUrl . ' ' . $width . 'w';
         }
         
         // Use the middle width as the default src
         $defaultWidth = $widths[floor(count($widths) / 2)] ?? 1100;
-        $defaultSrc = $this->images->getUrl($imageId, ['w' => $defaultWidth]);
+        $defaultParams = array_merge($glideParams, ['w' => $defaultWidth]);
+        $defaultSrc = $this->images->getUrl($imageId, $defaultParams);
         
         // Build attributes
         $imgAttributes = array_merge([
@@ -87,36 +93,55 @@ class ImageTag
     /**
      * Creates a picture tag for art direction with different images per viewport
      * 
-     * @param int $mobileImageId WordPress attachment ID for mobile
-     * @param int $desktopImageId WordPress attachment ID for desktop
+     * @param int|null $mobileImageId WordPress attachment ID for mobile (nullable)
+     * @param int|null $desktopImageId WordPress attachment ID for desktop (nullable)
      * @param string $breakpoint Media query breakpoint (e.g., '640px')
      * @param array $mobileWidths Array of widths for mobile srcset
      * @param array $desktopWidths Array of widths for desktop srcset
      * @param array $attributes HTML attributes for the img tag
+     * @param array $mobileGlideParams Additional Glide parameters for mobile
+     * @param array $desktopGlideParams Additional Glide parameters for desktop
      * @return string The HTML picture element
      */
     public function createPicture(
-        int $mobileImageId, 
-        int $desktopImageId, 
+        ?int $mobileImageId, 
+        ?int $desktopImageId, 
         string $breakpoint = '640px',
         array $mobileWidths = [375, 750],
         array $desktopWidths = [1100, 1500, 2200],
-        array $attributes = []
+        array $attributes = [],
+        array $mobileGlideParams = [],
+        array $desktopGlideParams = []
     ): string {
+        
+        // Return empty if both images are null
+        if ($mobileImageId === null && $desktopImageId === null) {
+            return '';
+        }
+        
+        // If only one image is provided, use regular img tag instead of picture
+        if ($mobileImageId === null || $desktopImageId === null) {
+            $imageId = $desktopImageId ?? $mobileImageId;
+            $widths = $desktopImageId ? $desktopWidths : $mobileWidths;
+            $glideParams = $desktopImageId ? $desktopGlideParams : $mobileGlideParams;
+            
+            return $this->create($imageId, '100vw', $widths, $attributes, $glideParams);
+        }
         
         // Get alt text (prefer desktop, fallback to mobile)
         $alt = get_post_meta($desktopImageId, '_wp_attachment_image_alt', true) ?: 
                get_post_meta($mobileImageId, '_wp_attachment_image_alt', true) ?: '';
         
         // Build mobile srcset
-        $mobileSrcset = $this->buildSrcsetForImage($mobileImageId, $mobileWidths);
+        $mobileSrcset = $this->buildSrcsetForImage($mobileImageId, $mobileWidths, $mobileGlideParams);
         
         // Build desktop srcset  
-        $desktopSrcset = $this->buildSrcsetForImage($desktopImageId, $desktopWidths);
+        $desktopSrcset = $this->buildSrcsetForImage($desktopImageId, $desktopWidths, $desktopGlideParams);
         
         // Get default src (middle width of desktop)
         $defaultWidth = $desktopWidths[floor(count($desktopWidths) / 2)] ?? 1100;
-        $defaultSrc = $this->images->getUrl($desktopImageId, ['w' => $defaultWidth]);
+        $defaultParams = array_merge($desktopGlideParams, ['w' => $defaultWidth]);
+        $defaultSrc = $this->images->getUrl($desktopImageId, $defaultParams);
         
         // Build picture element
         $html = '<picture>';
@@ -159,12 +184,18 @@ class ImageTag
     /**
      * Build srcset array for a specific image and widths
      * 
-     * @param int $imageId
+     * @param int|null $imageId
      * @param array $widths
+     * @param array $glideParams Additional Glide parameters
      * @return array
      */
-    protected function buildSrcsetForImage(int $imageId, array $widths): array
+    protected function buildSrcsetForImage(?int $imageId, array $widths, array $glideParams = []): array
     {
+        // Return empty array if imageId is null
+        if ($imageId === null) {
+            return [];
+        }
+        
         $originalUrl = wp_get_attachment_url($imageId);
         if (!$originalUrl) {
             return [];
@@ -184,10 +215,14 @@ class ImageTag
                 continue;
             }
             
-            $url = $this->images->getUrl($imageId, ['w' => $width]);
+            // Merge width with custom Glide parameters
+            $params = array_merge($glideParams, ['w' => $width]);
+            
+            $url = $this->images->getUrl($imageId, $params);
             $srcsetEntries[] = $url . ' ' . $width . 'w';
             
-            $webpUrl = $this->images->getUrl($imageId, ['w' => $width, 'fm' => 'webp']);
+            $webpParams = array_merge($params, ['fm' => 'webp']);
+            $webpUrl = $this->images->getUrl($imageId, $webpParams);
             $srcsetEntries[] = $webpUrl . ' ' . $width . 'w';
         }
         
