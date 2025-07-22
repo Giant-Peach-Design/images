@@ -68,37 +68,75 @@ class Images
     }
 
     /**
-     * Get image using config-based sizes and multi-viewport handling
+     * Retrieves the image based on the specified parameters.
      *
+     * @param int|string $image The ID or URL of the image.
+     * @param string|array $imageSize The size of the image to retrieve.
+     * @param int|string $mobileImage The ID or URL of the mobile image (optional).
+     * @param int|string $tabletImage The ID or URL of the tablet image (optional).
+     * @return mixed The retrieved image.
+     * @throws \Exception If the specified image size is not found in the configuration.
      * @deprecated version 3.0.0 Use getUrl() with explicit parameters instead
      */
-    public function get($image, $imageSize, $mobileImage = -1, $tabletImage = -1): array
+    public function get(int|string $image, string|array $imageSize, int|string $mobileImage = -1, int|string $tabletImage = -1)
     {
+        $imgSize = $this->getSizeFromConfig($imageSize);
+
+        // we need to check if the imgSize array has a 'w' and 'h' key...
+        if (!isset($imgSize['desktop'])) {
+            return $this->images(
+                desktopId: $image,
+                desktopParams: $imgSize,
+            );
+        }
+
+        // or if it's an array of sizes (desktop, mobile, tablet)...
+        if (isset($imgSize['desktop'])) {
+            return $this->images(
+                desktopId: $image,
+                tabletId: $tabletImage,
+                mobileId: $mobileImage,
+                desktopParams: $imgSize['desktop'],
+                mobileParams: $imgSize['mobile'] ?? [],
+                tabletParams: $imgSize['tablet'] ?? []
+            );
+        }
+    }
+
+    /**
+     * Generate images array for multiple device sizes (private method from original)
+     * 
+     * @deprecated version 3.0.0
+     */
+    private function images(
+        int|string $desktopId, 
+        array $desktopParams, 
+        int|string $mobileId = -1, 
+        array $mobileParams = [], 
+        int|string $tabletId = -1, 
+        array $tabletParams = []
+    ): array {
         $result = [
             'desktop' => '',
             'mobile' => '',
             'tablet' => ''
         ];
 
-        $sizeConfig = $this->getSizeFromConfig($imageSize);
+        // Desktop image
+        if ($desktopId !== -1 && !empty($desktopParams)) {
+            $result['desktop'] = $this->modernImages->getUrl($desktopId, $desktopParams);
+        }
 
-        if ($sizeConfig) {
-            // Desktop image
-            if (isset($sizeConfig['desktop'])) {
-                $result['desktop'] = $this->modernImages->getUrl($image, $sizeConfig['desktop']);
-            }
+        // Mobile image (fallback to desktop if not provided)
+        $finalMobileId = ($mobileId !== -1) ? $mobileId : $desktopId;
+        if ($finalMobileId !== -1 && !empty($mobileParams)) {
+            $result['mobile'] = $this->modernImages->getUrl($finalMobileId, $mobileParams);
+        }
 
-            // Mobile image
-            $mobileImageId = ($mobileImage !== -1) ? $mobileImage : $image;
-            if (isset($sizeConfig['mobile'])) {
-                $result['mobile'] = $this->modernImages->getUrl($mobileImageId, $sizeConfig['mobile']);
-            }
-
-            // Tablet image
-            $tabletImageId = ($tabletImage !== -1) ? $tabletImage : $image;
-            if (isset($sizeConfig['tablet'])) {
-                $result['tablet'] = $this->modernImages->getUrl($tabletImageId, $sizeConfig['tablet']);
-            }
+        // Tablet image (fallback to desktop if not provided)  
+        $finalTabletId = ($tabletId !== -1) ? $tabletId : $desktopId;
+        if ($finalTabletId !== -1 && !empty($tabletParams)) {
+            $result['tablet'] = $this->modernImages->getUrl($finalTabletId, $tabletParams);
         }
 
         return $result;
