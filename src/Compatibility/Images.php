@@ -190,12 +190,24 @@ class Images
     ];
 
     if (is_array($desktop)) {
-      $result['desktop'] = $this->image($desktop['image'] ?? '', $desktop['params'] ?? []);
+      $desktopId = $desktop['id'];
+
+      if (array_key_exists('image', $desktop)) {
+        $desktopId = $desktop['image'];
+      }
+
+      $result['desktop'] = $this->image($desktopId ?? '', $desktop['params'] ?? []);
     } else {
       $result['desktop'] = $this->image($desktop, []);
     }
 
     if (!empty($mobile)) {
+      $mobileId = $mobile['id'];
+
+      if (array_key_exists('image', $mobile)) {
+        $mobileId = $mobile['image'];
+      }
+
       $result['mobile'] = $this->image($mobile['image'] ?? '', $mobile['params'] ?? []);
     }
 
